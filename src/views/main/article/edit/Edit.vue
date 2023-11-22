@@ -15,15 +15,15 @@
 
         <el-form-item label="分类：" prop="category">
           <el-select placeholder="请选择分类信息" v-model="editForm.category">
-            <el-option label="Zone one" value="shanghai" />
-            <el-option label="Zone two" value="beijing" />
+            <el-option label="html" value="html" />
+            <el-option label="css" value="css" />
           </el-select>
         </el-form-item>
 
         <el-form-item label="标签：" prop="tags">
           <el-select placeholder="请选择对应的标签" v-model="editForm.tags">
-            <el-option label="Zone one" value="shanghai" />
-            <el-option label="Zone two" value="beijing" />
+            <el-option label="语义化" value="语义化" />
+            <el-option label="新特性" value="新特性" />
           </el-select>
         </el-form-item>
 
@@ -36,21 +36,23 @@
         <el-form-item label="文章封面：" prop="cover" v-model="editForm.cover">
           <el-upload
             class="avatar-uploader"
-            action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+            action="http://localhost:8001/file"
+            :on-success="handleAvatarSuccess"
+            name="jimImg"
             :show-file-list="false"
           >
-            <img v-if="0" class="avatar" />
+            <img v-if="editForm.cover" :src="editForm.cover" class="avatar" />
             <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
           </el-upload>
         </el-form-item>
 
         <el-form-item label="置顶：" prop="top">
-          <el-switch />
+          <el-switch active-value="1" inactive-value="0" v-model="editForm.top" />
         </el-form-item>
       </div>
     </el-form>
-    <TextEditor style="height: 600px" />
-    <div class="edit-bottom">
+    <TextEditor @send-content="getContent" style="height: 600px" />
+    <div class="edit-bottom" @click="submit">
       <el-button type="primary" plain
         ><el-icon><Edit /></el-icon> <span>发布文章</span></el-button
       >
@@ -61,7 +63,9 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import TextEditor from './TextEditor.vue'
-import type { FormInstance, FormRules } from 'element-plus'
+import { ElNotification } from 'element-plus'
+import type { FormRules, UploadProps } from 'element-plus'
+import { addArticleApi } from '@/api/article'
 
 interface IEditForm {
   title: string
@@ -69,6 +73,9 @@ interface IEditForm {
   summary: string
   tags: string
   cover: string
+  top: string
+  content: string
+  state: string
 }
 
 const editForm = reactive<IEditForm>({
@@ -76,13 +83,16 @@ const editForm = reactive<IEditForm>({
   category: '',
   summary: '',
   tags: '',
-  cover: ''
+  cover: '',
+  top: '',
+  state: '0',
+  content: ''
 })
 
 const editRule = reactive<FormRules>({
   title: [
     { required: true, message: '请输入文章标题', trigger: 'blur' },
-    { min: 3, max: 15, message: '文章标题至少3个字，  不可超过15字', trigger: 'blur' }
+    { min: 3, max: 15, message: '文章标题至少3个字, 不可超过15字', trigger: 'blur' }
   ],
   category: [
     { required: true, message: '请选择文章分类', trigger: 'blur' },
@@ -97,6 +107,42 @@ const editRule = reactive<FormRules>({
     { min: 3, max: 15, message: '文章标题不可超过15字', trigger: 'blur' }
   ]
 })
+
+const handleAvatarSuccess: UploadProps['onSuccess'] = (response) => {
+  if (response.code === 200) {
+    editForm.cover = response.data.imgUrl
+    ElNotification.success({
+      title: 'Success',
+      message: '上传成功',
+      offset: 100
+    })
+  } else {
+    ElNotification.error({
+      title: 'Error',
+      message: '上传失败',
+      offset: 100
+    })
+  }
+}
+
+const getContent = (content) => {
+  editForm.content = content
+}
+
+const submit = async () => {
+  try {
+    const { code, data } = await addArticleApi(editForm)
+    if (code === 200) {
+      ElNotification.success({
+        title: '发布成功！',
+        message: '文章已自动发布',
+        offset: 100
+      })
+    }
+  } catch (err) {
+    console.log(err)
+  }
+}
 </script>
 
 <style scoped lang="less">
@@ -107,6 +153,10 @@ const editRule = reactive<FormRules>({
   .list-form {
     display: flex;
     margin-top: 20px;
+  }
+  .avatar {
+    width: 150px;
+    height: 150px;
   }
 
   .avatar-uploader .el-upload {

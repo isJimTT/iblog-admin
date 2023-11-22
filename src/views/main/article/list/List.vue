@@ -6,9 +6,9 @@
       </div>
       <div class="list-search">
         <span style="font-size: 14px">发布状态：</span>
-        <el-select v-model="queryParams.state" placeholder="未发布" clearable>
-          <el-option label="未发布" value="0" />
-          <el-option label="已发布" value="1" />
+        <el-select v-model="state" placeholder="未发布" clearable>
+          <el-option label="未发布" value="1" />
+          <el-option label="已发布" value="0" />
         </el-select>
 
         <el-input
@@ -27,7 +27,7 @@
       <el-table-column
         prop="title"
         label="文章标题"
-        width="300"
+        width="250"
         show-overflow-tooltip
       ></el-table-column>
       <el-table-column label="封面" header-align="center" width="100">
@@ -57,11 +57,17 @@
           <el-tag v-else type="danger">未发布</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="time" label="创建时间" width="200"></el-table-column>
+      <el-table-column prop="cteat_time" label="创建时间" width="200">
+        <template #default="scope">
+          <span>{{ formatTime(scope) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作">
         <template #default="scope">
-          <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)"
-            >下架</el-button
+          <el-button v-if="!scope.row.state" size="small" type="success">上架</el-button>
+          <el-button v-else size="small" type="danger">下架</el-button>
+          <el-button size="small" type="danger" @click="handleDelete(scope.row.article_id)"
+            >删除</el-button
           >
         </template>
       </el-table-column>
@@ -73,106 +79,57 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getArticleListApi, deleteArticleApi } from '@/api/article'
+import { ElNotification } from 'element-plus'
 
+let tableData = ref(null)
+const state = ref('')
 const searchText = ref('')
-const tableData = reactive([
-  {
-    title: 'html5语义化',
-    cover: 'https://cos.yychuiyan.com/images/do3z134k3p40000.webp',
-    summary: 'No. 189, Grove St, Los Angeles',
-    category: 'html',
-    tags: ['html5', '语义化'],
-    top: 1,
-    state: 1,
-    time: '2023-11-10'
-  },
-  {
-    title: 'html5语义化',
-    cover: 'https://cos.yychuiyan.com/images/do3z134k3p40000.webp',
-    summary: 'No. 189, Grove St, Los Angeles',
-    category: 'html',
-    tags: ['html5', '语义化'],
-    top: 1,
-    state: 1,
-    time: '2023-11-10'
-  },
-  {
-    title: 'html5语义化',
-    cover: 'https://cos.yychuiyan.com/images/do3z134k3p40000.webp',
-    summary: 'No. 189, Grove St, Los Angeles',
-    category: 'html',
-    tags: ['html5', '语义化'],
-    top: 1,
-    state: 1,
-    time: '2023-11-10'
-  },
-  {
-    title: 'html5语义化',
-    cover: 'https://cos.yychuiyan.com/images/do3z134k3p40000.webp',
-    summary: 'No. 189, Grove St, Los Angeles',
-    category: 'html',
-    tags: ['html5', '语义化'],
-    top: 1,
-    state: 1,
-    time: '2023-11-10'
-  },
-  {
-    title: 'html5语义化',
-    cover: 'https://cos.yychuiyan.com/images/do3z134k3p40000.webp',
-    summary: 'No. 189, Grove St, Los Angeles',
-    category: 'html',
-    tags: ['html5', '语义化'],
-    top: 1,
-    state: 1,
-    time: '2023-11-10'
-  },
-  {
-    title: 'html5语义化',
-    cover: 'https://cos.yychuiyan.com/images/do3z134k3p40000.webp',
-    summary: 'No. 189, Grove St, Los Angeles',
-    category: 'html',
-    tags: ['html5', '语义化'],
-    top: 1,
-    state: 1,
-    time: '2023-11-10'
-  },
-  {
-    title: 'html5语义化',
-    cover: 'https://cos.yychuiyan.com/images/do3z134k3p40000.webp',
-    summary: 'No. 189, Grove St, Los Angeles',
-    category: 'html',
-    tags: ['html5', '语义化'],
-    top: 1,
-    state: 1,
-    time: '2023-11-10'
-  },
-  {
-    title: 'html5语义化',
-    cover: 'https://cos.yychuiyan.com/images/do3z134k3p40000.webp',
-    summary: 'No. 189, Grove St, Los Angeles',
-    category: 'html',
-    tags: ['html5', '语义化'],
-    top: 1,
-    state: 1,
-    time: '2023-11-10'
+
+const getArticleList = async () => {
+  try {
+    const { code, data } = await getArticleListApi(state.value)
+    if (code === 200) {
+      tableData.value = data
+    }
+  } catch (err) {
+    console.log(err)
   }
-])
-const queryParams = reactive({
-  state: null
-})
+}
 
 const handleAdd = () => {
   console.log('新增')
 }
 
 const handleSearch = () => {
-  console.log('搜索')
+  getArticleList()
 }
 
-const handleDelete = (index, row) => {
-  console.log('删除', index, row)
+const handleDelete = async (articleId) => {
+  try {
+    console.log(articleId)
+    const { code } = await deleteArticleApi(articleId)
+    if (code === 200) {
+      ElNotification.success({
+        title: '删除成功',
+        message: '文章已删除',
+        offset: 100
+      })
+      getArticleList()
+    }
+  } catch (err) {
+    console.log(err)
+  }
 }
+
+const formatTime = (data) => {
+  return new Date(data.row.cteat_time).toLocaleString()
+}
+
+onMounted(() => {
+  getArticleList()
+})
 </script>
 
 <style scoped lang="less">

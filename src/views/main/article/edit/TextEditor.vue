@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import '@wangeditor/editor/dist/css/style.css' // 引入 css
-import { onBeforeUnmount, ref, shallowRef } from 'vue'
+import { onBeforeUnmount, ref, shallowRef, defineEmits } from 'vue'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import { IDomEditor } from '@wangeditor/editor'
 
@@ -42,6 +42,8 @@ const editorConfig = {
   }
 }
 
+const emit = defineEmits(['sendContent'])
+
 // 组件销毁时，也及时销毁编辑器
 onBeforeUnmount(() => {
   const editor = editorRef.value
@@ -54,6 +56,7 @@ const handleCreated = (editor: IDomEditor) => {
 }
 
 const handleChange = (editor: IDomEditor) => {
-  console.log(editor.getHtml())
+  // console.log(editor.getHtml())
+  emit('sendContent', editor.getHtml())
 }
 </script>
