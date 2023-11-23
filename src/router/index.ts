@@ -5,7 +5,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/admin/article/list'
+      redirect: '/article/list'
     },
     {
       path: '/login',

@@ -2,6 +2,7 @@ export const BASE_URL = 'http://localhost:8001'
 export const TIME_OUT = 6000
 
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
+import { localToken } from './token'
 
 const service: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -13,8 +14,8 @@ const service: AxiosInstance = axios.create({
 
 // 请求前拦截
 service.interceptors.request.use((config: AxiosRequestConfig) => {
-  const Authorization =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsIm5hbWUiOiJqaW10dCIsImlhdCI6MTcwMDU2NzcyNCwiZXhwIjoxNzAwNjU0MTI0fQ.VUaRDi9s_6uXVSdeRKJ0p52-7wx0ouJ1WXqjXKouL1U'
+  const token = localToken.getToken('token')
+  const Authorization = token
   if (config && config.headers && Authorization) {
     config.headers.Authorization = Authorization
   }

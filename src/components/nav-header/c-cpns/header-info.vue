@@ -24,7 +24,7 @@
         </span>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item>
+            <el-dropdown-item @click="loginOut">
               <el-icon><CircleCloseFilled /></el-icon>
               退出系统
             </el-dropdown-item>
@@ -45,6 +45,13 @@
 
 <script setup lang="ts" name="header-info">
 import { useRouter } from 'vue-router'
+import { localToken } from '@/utils/token'
+
+const router = useRouter()
+const loginOut = () => {
+  localToken.clearToken()
+  router.push('/login')
+}
 </script>
 
 <style scoped lang="less">

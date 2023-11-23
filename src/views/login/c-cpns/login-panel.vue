@@ -1,6 +1,6 @@
 <template>
   <div class="panel">
-    <h1 class="title">弘源后台管理系统</h1>
+    <h1 class="title">登录 Jim_Blog</h1>
     <el-tabs type="border-card" stretch v-model="currentTab">
       <el-tab-pane name="account">
         <template #label>
@@ -22,8 +22,8 @@
       </el-tab-pane>
     </el-tabs>
     <div class="control-account">
-      <el-checkbox v-model="isKeep" label="记住密码" />
-      <el-link type="primary">记住密码</el-link>
+      <el-checkbox label="记住密码" />
+      <el-link type="primary">忘记密码</el-link>
     </div>
     <el-button type="primary" class="login-btn" @click="loginAciton">立即登录</el-button>
   </div>
@@ -33,19 +33,17 @@
 import { ref, watch } from 'vue'
 import PanelPhone from './panel-phone.vue'
 import PanelAccount from './panel-account.vue'
-import { localCache } from '@/utils/cache'
 
 const currentTab = ref('account')
-const isKeep = ref<boolean>(localCache.getCache('rem_pwd'))
-watch(isKeep, (newValue) => {
-  localCache.setCache('rem_pwd', newValue)
-})
+// watch(isKeep, (newValue) => {
+//   localCache.setCache('rem_pwd', newValue)
+// })
 
 const accountRef = ref<InstanceType<typeof PanelAccount>>()
 
 function loginAciton() {
   console.log('立即登录')
-  accountRef.value?.loginAction(isKeep.value)
+  accountRef.value?.loginAction()
 }
 </script>
 
@@ -82,3 +80,4 @@ function loginAciton() {
   }
 }
 </style>
+@/utils/token

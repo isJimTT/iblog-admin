@@ -16,20 +16,20 @@
 import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormRules, FormInstance } from 'element-plus'
-// import useLoginStore from '@/store/login/login'
-import { localCache } from '@/utils/cache'
+import { loginApi } from '@/api/login'
+import { localToken } from '@/utils/token'
+import { useRouter } from 'vue-router'
 
-// 定义内部的数据
 const account = reactive({
-  name: localCache.getCache('name') ?? '',
-  password: localCache.getCache('password') ?? ''
+  name: '',
+  password: ''
 })
-
-// 定义form的验证规则
+const formRef = ref<FormInstance>()
+const router = useRouter()
 const accountRules: FormRules = {
   name: [
     { required: true, message: '必须输入用户名~', trigger: 'blur' },
-    { pattern: /^[a-z0-9]{6,20}$/, message: '必须是6~20个字母或数字', trigger: 'blur' }
+    { pattern: /^[a-z0-9]{5,20}$/, message: '必须是6~20个字母或数字', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '必须输入密码~', trigger: 'blur' },
@@ -37,28 +37,20 @@ const accountRules: FormRules = {
   ]
 }
 
-// 定义登录逻辑
-const formRef = ref<FormInstance>()
-// const loginStore = useLoginStore()
-function loginAction(isKeep: boolean) {
-  // 是否通过了验证
-  formRef.value?.validate((isValid) => {
-    if (isValid) {
-      const name = account.name
-      const password = account.password
-      // 1.登录操作
-      // loginStore.accountLoginAction({ name, password })
-
-      // 2.记住密码
-      if (isKeep) {
-        localCache.setCache('name', name)
-        localCache.setCache('password', password)
+async function loginAction() {
+  formRef.value?.validate(async (isValid) => {
+    if (!isValid) return ElMessage.warning({ message: '账号或者密码输入的规则错误~' })
+    try {
+      const { code, data } = await loginApi(account)
+      if (code === 200) {
+        localToken.setToken('token', data.token)
+        router.push('/article/list')
+        return ElMessage.success({ message: '登录成功~' })
       } else {
-        localCache.deleteCache('name')
-        localCache.deleteCache('password')
+        return ElMessage.error({ message: '登录失败，请重试~' })
       }
-    } else {
-      ElMessage.warning({ message: '账号或者密码输入的规则错误~' })
+    } catch (err) {
+      console.log(err)
     }
   })
 }

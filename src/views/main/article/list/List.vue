@@ -82,11 +82,12 @@
 import { ref, onMounted } from 'vue'
 import { getArticleListApi, deleteArticleApi } from '@/api/article'
 import { ElNotification } from 'element-plus'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 let tableData = ref(null)
 const state = ref('')
 const searchText = ref('')
-
 const getArticleList = async () => {
   try {
     const { code, data } = await getArticleListApi(state.value)
@@ -99,7 +100,7 @@ const getArticleList = async () => {
 }
 
 const handleAdd = () => {
-  console.log('新增')
+  router.push('/article/edit')
 }
 
 const handleSearch = () => {
