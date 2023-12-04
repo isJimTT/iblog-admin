@@ -15,16 +15,18 @@
 
         <el-form-item label="分类：" prop="category">
           <el-select placeholder="请选择分类信息" v-model="editForm.category">
-            <el-option label="html" value="html" />
-            <el-option label="css" value="css" />
+            <el-option
+              v-for="item in selectOption"
+              :key="item?.id"
+              :label="item.class_name"
+              :value="item.class_name"
+            />
           </el-select>
         </el-form-item>
 
         <el-form-item label="标签：" prop="tags">
-          <el-select placeholder="请选择对应的标签" v-model="editForm.tags">
-            <el-option label="语义化" value="语义化" />
-            <el-option label="新特性" value="新特性" />
-          </el-select>
+          <el-input style="width: 220px" placeholder="请输入文章标签" v-model="editForm.tags">
+          </el-input>
         </el-form-item>
 
         <el-form-item label="文章简介：" prop="summary">
@@ -61,11 +63,11 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, onMounted, ref } from 'vue'
 import TextEditor from './TextEditor.vue'
 import { ElNotification } from 'element-plus'
 import type { FormRules, UploadProps } from 'element-plus'
-import { addArticleApi } from '@/api/article'
+import { addArticleApi, getArticleClassApi } from '@/api/article'
 
 interface IEditForm {
   title: string
@@ -89,6 +91,7 @@ const editForm = reactive<IEditForm>({
   content: ''
 })
 
+const selectOption = ref<any[]>([])
 const editRule = reactive<FormRules>({
   title: [
     { required: true, message: '请输入文章标题', trigger: 'blur' },
@@ -100,10 +103,10 @@ const editRule = reactive<FormRules>({
   ],
   summary: [
     { required: true, message: '请输入文章简介', trigger: 'blur' },
-    { min: 3, max: 15, message: '文章标题不可超过15字', trigger: 'blur' }
+    { min: 3, max: 200, message: '文章标题不可超过50字', trigger: 'blur' }
   ],
   tags: [
-    { required: true, message: '请选择文章标签', trigger: 'blur' },
+    { required: true, message: '请输入文章标签', trigger: 'blur' },
     { min: 3, max: 15, message: '文章标题不可超过15字', trigger: 'blur' }
   ]
 })
@@ -143,6 +146,17 @@ const submit = async () => {
     console.log(err)
   }
 }
+
+onMounted(async () => {
+  try {
+    const { code, data } = await getArticleClassApi()
+    if (code === 200) {
+      selectOption.value = data
+    }
+  } catch (err) {
+    console.log(err)
+  }
+})
 </script>
 
 <style scoped lang="less">
@@ -154,6 +168,7 @@ const submit = async () => {
     display: flex;
     margin-top: 20px;
   }
+
   .avatar {
     width: 150px;
     height: 150px;

@@ -1,12 +1,21 @@
 import request from '@/utils/request'
 
-export const getArticleListApi = (state?: string) => {
+export const getArticleListApi = (state?: string, page?: number, pageSize?: number) => {
   return request({
     method: 'get',
     url: '/article',
     params: {
-      state
+      state,
+      page,
+      pageSize
     }
+  })
+}
+
+export const getArticleClassApi = () => {
+  return request({
+    method: 'get',
+    url: '/article/class'
   })
 }
 

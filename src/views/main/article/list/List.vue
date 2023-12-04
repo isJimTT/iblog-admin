@@ -35,17 +35,9 @@
           <el-image style="width: 100px; height: 100px" :src="scope.row.cover" />
         </template>
       </el-table-column>
-      <el-table-column prop="summary" label="简介" width="350"></el-table-column>
+      <el-table-column prop="summary" label="简介" class="summary" width="350"></el-table-column>
       <el-table-column prop="category" label="分类" width="150"></el-table-column>
-      <el-table-column label="标签" width="150">
-        <template #default="scope">
-          <div v-for="item in scope.row.tags" :key="item">
-            <button>
-              {{ item }}
-            </button>
-          </div>
-        </template>
-      </el-table-column>
+      <el-table-column prop="tags" label="标签" width="150"> </el-table-column>
       <el-table-column label="置顶" width="130">
         <template #default="scope">
           <el-switch v-model="scope.row.top" inline-prompt />
@@ -73,7 +65,13 @@
       </el-table-column>
     </el-table>
     <div class="list-pagination">
-      <el-pagination background :page-size="5" :total="100" />
+      <el-pagination
+        background
+        @update:current-page="onChangeCurPage"
+        :page-size="8"
+        :current-page="currentPage"
+        :total="totalArticle"
+      />
     </div>
   </div>
 </template>
@@ -88,11 +86,15 @@ const router = useRouter()
 let tableData = ref(null)
 const state = ref('')
 const searchText = ref('')
+const currentPage = ref(1)
+const totalArticle = ref(0)
+
 const getArticleList = async () => {
   try {
-    const { code, data } = await getArticleListApi(state.value)
+    const { code, data, total } = await getArticleListApi(state.value, currentPage.value, 8)
     if (code === 200) {
       tableData.value = data
+      totalArticle.value = total
     }
   } catch (err) {
     console.log(err)
@@ -104,6 +106,11 @@ const handleAdd = () => {
 }
 
 const handleSearch = () => {
+  getArticleList()
+}
+
+const onChangeCurPage = (page) => {
+  currentPage.value = page
   getArticleList()
 }
 
@@ -138,6 +145,13 @@ onMounted(() => {
   width: 98.5%;
   margin: 15px auto;
   background-color: #fff;
+  ::v-deep .el-table td.el-table__cell div {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 控制最多显示的行数 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .list-top {
     display: flex;
     justify-content: space-between;
